@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+       http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://camel.apache.org/schema/spring       http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+    <!-- a bean for hoge services -->
+    <bean
+        id="hogeService"
+        class="eternal.hoge.example.service.HogeService" />
+
+    <camelContext id="myCamel" xmlns="http://camel.apache.org/schema/spring">
+
+        <restConfiguration
+            component="servlet"
+            bindingMode="json"
+            enableCORS="true">
+
+            <dataFormatProperty key="prettyPrint" value="true" /><!-- json output in pretty mode -->
+        </restConfiguration>
+
+        <rest
+            id="hoge_route"
+            path="/hoge"
+            consumes="application/json"
+            produces="application/json"
+            apiDocs="true">
+            <description>Hoge rest service</description>
+            
+            <!-- HTTP Method GET -->
+            <get
+                id="hoge_findall"
+                uri=""
+                outType="eternal.hoge.example.model.Hoge[]">
+                <description>Find all hoges</description>
+                <responseMessage message="All the hoges" />
+                <to uri="bean:hogeService?method=findAllHoge" />
+            </get>
+
+            <get
+                id="hoge_get_by_id"
+                uri="/{id}"
+                outType="eternal.hoge.example.model.Hoge">
+                <description>Find hoge by id</description>
+                <param
+                    name="id"
+                    type="path"
+                    description="The id of the hoge to get"
+                    dataType="integer" />
+                <responseMessage message="The hoge that was found" />
+                <responseMessage
+                    code="404"
+                    message="Hoge not found" />
+                <to uri="direct:hogeId" />
+            </get>
+
+            <!-- HTTP Method POST -->
+            <post
+                id="hoge_post"
+                type="eternal.hoge.example.model.Hoge">
+                <description>Create a hoge</description>
+                <param
+                    name="body"
+                    type="body"
+                    description="The hoge to create" />
+                <to uri="bean:hogeService?method=createHoge" />
+            </post>
+
+            <!-- HTTP Method PUT -->
+            <put
+                id="hoge_put"
+                type="eternal.hoge.example.model.Hoge">
+                <description>Update a hoge</description>
+                <param
+                    name="body"
+                    type="body"
+                    description="The hoge to update" />
+                <to uri="bean:hogeService?method=updateHoge" />
+            </put>
+
+            <!-- HTTP Method DELETE -->
+            <delete
+                uri="/{id}"
+                id="hoge_delete"
+                type="eternal.hoge.example.model.Hoge">
+                <description>Delete a hoge</description>
+                <param
+                    name="body"
+                    type="body"
+                    description="The hoge to delete" />
+                <to uri="bean:hogeService?method=deleteHoge" />
+            </delete>
+        </rest>
+
+        <route id="hoge_id_processor_route">
+            <from uri="direct:hogeId" />
+            <to uri="bean:hogeService?method=findHoge(${header.id})" />
+            <filter>
+                <simple>${body} == null</simple>
+                <setHeader headerName="Exchange.HTTP_RESPONSE_CODE">
+                    <constant>404</constant>
+                </setHeader>
+            </filter>
+        </route>
+    </camelContext>
+
+</beans>
