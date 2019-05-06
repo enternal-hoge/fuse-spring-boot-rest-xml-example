@@ -39,7 +39,7 @@ POST http://localhost:8080/hoge
 ```
 {
     "id": 100,
-	"name": "page"
+    "name": "page"
 }
 ```
 
@@ -47,7 +47,7 @@ GET http://127.0.0.1:8080/hoge/100
 ```
 {
     "id": 100,
-	"name": "page"
+    "name": "page"
 }
 ```
 
@@ -55,7 +55,7 @@ PUT http://localhost:8080/hoge
 ```
 {
     "id": 100,
-	"name": "foo"
+    "name": "foo"
 }
 ```
 
